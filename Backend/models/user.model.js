@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import {isEmail} from "express-validator";
+
 import jwt from "jsonwebtoken";
 
 
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
         required:true,
         trim:true,
         unique:true,
-        valodate:[isEmail, "Please enter a valid email address"]
+        
 
         
     }, 
