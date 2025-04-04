@@ -1,8 +1,9 @@
 import { validationResult } from "express-validator";
 import User from "../models/user.model.js";
+import bcrypt from "bcrypt";
 
 export const register = async (req, res) =>{
-    console.log(req.body);
+    
     const errors = validationResult(req);
 
    
@@ -48,38 +49,51 @@ export const register = async (req, res) =>{
 
 export const  login = async (req, res) =>{
 
-    console.log(req);
-
-    const errors = validationResult(req.body);
+    console.log(req.body);
+try{const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
     }
 
+    
+  
     const {email, password} = req.body;
 
-    try{
-        const user = await User.findOne({email});
+    
+        const user = await User.findOne({email}).select("+password");
         if(!user){
             return res.status(400).json({message: "User does not exist"});
         }
 
-        const isMatch = await User.comparePassword(password);
+        const isMatch = await bcrypt.compare(password,user.password);
         if(!isMatch){
             return res.status(400).json({message: "Invalid credentials"});
         }
 
         const token = await user.generateAuthToken();
-        res.status(200).json({token});
+
+        return res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                id: user._id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+            }
+        });
+     
 
        
-
-
-
-
-    }catch(error){
-       
-        res.status(500).json({message: "Server Error"});
     }
+
+
+
+    catch (error) {
+        console.error("Login error:", error.message);
+        console.error(error.stack); // 🔍 full error trace
+        return res.status(500).json({ message: "Server Error", error: error.message });
+      }
 
 
 }
