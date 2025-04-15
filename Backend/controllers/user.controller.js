@@ -13,7 +13,7 @@ export const register = async (req, res) =>{
         return res.status(400).json({errors: errors.array()});
     }
 
-    const {firstname, lastname,email,password} = req.body;
+    const {firstName, lastName,email,password} = req.body;
 
     try{
         const existingUser = await User.findOne({email});
@@ -24,8 +24,8 @@ export const register = async (req, res) =>{
         const hashedPassword = await User.hashPassword(password);
 
         const user = new User({
-            firstname,
-            lastname,
+            firstName,
+            lastName,
             email,
             password: hashedPassword
         })
@@ -52,7 +52,7 @@ export const register = async (req, res) =>{
 export const  login = async (req, res) =>{
 
     console.log(req.body);
-try{const errors = validationResult(req);
+const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
     }
@@ -61,7 +61,7 @@ try{const errors = validationResult(req);
   
     const {email, password} = req.body;
 
-    
+    try{
         const user = await User.findOne({email}).select("+password");
         if(!user){
             return res.status(400).json({message: "User does not exist"});
@@ -79,8 +79,8 @@ try{const errors = validationResult(req);
             token,
             user: {
                 id: user._id,
-                firstname: user.firstname,
-                lastname: user.lastname,
+                firstname: user.firstName,
+                lastname: user.lastName,
                 email: user.email,
             }
         });
@@ -92,8 +92,7 @@ try{const errors = validationResult(req);
 
 
     catch (error) {
-        console.error("Login error:", error.message);
-        console.error(error.stack); // 🔍 full error trace
+       
         return res.status(500).json({ message: "Server Error", error: error.message });
       }
 
