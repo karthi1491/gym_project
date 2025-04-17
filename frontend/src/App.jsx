@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { AdminProvider } from './context/AdminContext'; // Import the AdminProvider
+import { useState } from 'react';
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from './pages/Home'
@@ -21,6 +22,7 @@ function App() {
 
     
      <BrowserRouter >
+     <AdminProvider>
      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
@@ -28,7 +30,9 @@ function App() {
       <Route path="/adminlogin" element={<AdminLogin />} />
       <Route path="/adminregistration" element={<Register />} />
       <Route path="/adminpreview" element={<AdminPreview />} />
+     
      </Routes>
+     </AdminProvider>
      
      
      </BrowserRouter>

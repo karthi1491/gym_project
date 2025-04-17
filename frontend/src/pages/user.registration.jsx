@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAdmin } from '../context/AdminContext'; // Import the useAdmin hook
 
 function UserRegistration() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ function UserRegistration() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setAdmin } = useAdmin(); // Get setAdmin from context
 
   const handleChange = (e) => {
     setFormData({...formData, [e.target.name]: e.target.value});
@@ -27,12 +29,15 @@ function UserRegistration() {
     setLoading(true);
 
     try {
-        console.log(formData);
       const res = await axios.post('http://localhost:4000/user/register', formData);
-      localStorage.setItem('token', res.data.token);
-      navigate('/adminpreview');
+      // Store admin in context
+      setAdmin(res.data.admin);
+  
     } catch (err) {
-      alert(err.response?.data?.message || 'Registration failed');
+      const errorMessage = err.response?.data?.errors
+        ? err.response.data.errors.map(error => error.msg).join(', ')
+        : err.response?.data?.message || 'Registration failed';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -56,7 +61,7 @@ function UserRegistration() {
             type="text"
             name="firstName"
             placeholder="First Name"
-            value={formData.firstname}
+            value={formData.firstName}
             onChange={handleChange}
             className="w-full px-4 py-3 bg-[#1c1c1e] text-white rounded-md border border-[#2c2c2e] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
             required
@@ -65,7 +70,7 @@ function UserRegistration() {
             type="text"
             name="lastName"
             placeholder="Last Name"
-            value={formData.lastname}
+            value={formData.lastName}
             onChange={handleChange}
             className="w-full px-4 py-3 bg-[#1c1c1e] text-white rounded-md border border-[#2c2c2e] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
             required

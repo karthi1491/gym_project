@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAdmin } from '../context/AdminContext'; // Import the useAdmin hook
 
 const AdminRegistration = () => {
+  const navigate = useNavigate();
+  const { setAdmin } = useAdmin(); // Get setAdmin from context
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -71,6 +75,12 @@ const AdminRegistration = () => {
       const res = await axios.post('http://localhost:4000/admin/register', data);
       alert('Registered successfully!');
       console.log(res.data);
+
+      // Store admin in context
+      setAdmin(res.data.admin);
+
+      // Navigate to AdminPreview
+      navigate('/admin/preview');
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Registration failed');

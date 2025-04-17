@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useAdmin } from '../context/AdminContext'; // Import the useAdmin hook
 
 function AdminLogin() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setAdmin } = useAdmin(); // Get setAdmin from context
 
   const handleChange = (e) => {
     setFormData({...formData, [e.target.name]: e.target.value});
@@ -23,8 +24,8 @@ function AdminLogin() {
     try {
       const res = await axios.post('http://localhost:4000/admin/login', formData);
 
-      localStorage.setItem('adminToken', res.data.token);
-      // Redirect to admin dashboard
+      // Store admin in context
+      setAdmin(res.data.admin);
       navigate('/admin/dashboard');
     } catch (err) {
       alert(err.response?.data?.message || 'Login failed');
@@ -94,12 +95,12 @@ function AdminLogin() {
           Need help? <a href="/support" className="text-white underline">Contact support</a>
         </p>
 
-  <p className='text-center text-sm text-gray-400 mt-6'>
-              Don’t have an account?{' '}
-              <Link to="/adminregistration" className="text-white underline">
-                Register
-              </Link>
-            </p>
+        <p className='text-center text-sm text-gray-400 mt-6'>
+          Don’t have an account?{' '}
+          <Link to="/adminregistration" className="text-white underline">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );

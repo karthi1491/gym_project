@@ -1,9 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAdmin } from "../context/AdminContext"; // Import the useAdmin hook
 
-const AdminPreview = ({ admin }) => {
+const AdminPreview = () => {
+  const { admin } = useAdmin(); // Access admin data from context
   const [showDetails, setShowDetails] = useState(false);
 
-  if (!admin) return null;
+  useEffect(() => {
+    console.log("Admin data from context:", admin); // Log admin data
+    if (!admin) {
+      console.log("No admin data found.");
+    }
+  }, [admin]);
+
+  if (!admin) return <p className="text-center mt-10 text-gray-600">No admin data found.</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-10">
