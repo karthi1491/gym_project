@@ -44,15 +44,31 @@ export const register = async (req, res) =>{
         })
 
         await admin.save();
+        console.log('Saved admin:', admin);
 
         const token = await admin.generateAuthToken();
+        console.log('Generated token:', token);
 
-        res.status(201).json({token});
+        res.status(201).json({
+            token,
+            admin: {
+                id: admin._id,
+                firstName: admin.firstName,
+                lastName: admin.lastName,
+                email: admin.email,
+                gymImages: admin.gymImages,
+                trainerImages: admin.trainerImages,
+                subscriptionPrices: admin.subscriptionPrices,
+                location: admin.location
+            }
+        });
 
     }catch(error){
-        console.log(`Error: ${error.message}`);
-        res.status(500).json({message: "Internal Server Error"});
-        
+        console.error('Registration error:', error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
     }
 }
 

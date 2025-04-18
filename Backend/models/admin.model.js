@@ -42,21 +42,25 @@ const adminSchema = new mongoose.Schema({
 
     // ✅ FIXED typo here
     subscriptionPrices: {
+        oneDay: {
+            type: Number,
+            required: true
+        },
         oneMonth: {
             type: Number,
-            required: true,
+            required: true
         },
         threeMonths: {
             type: Number,
-            required: true,
+            required: true
         },
         sixMonths: {
             type: Number,
-            required: true,
+            required: true
         },
         oneYear: {
             type: Number,
-            required: true,
+            required: true
         }
     },
 

@@ -5,13 +5,14 @@ import { useAdmin } from '../context/AdminContext'; // Import the useAdmin hook
 
 const AdminRegistration = () => {
   const navigate = useNavigate();
-  const { setAdmin } = useAdmin(); // Get setAdmin from context
+  const { setAdmin, updateAdmin } = useAdmin(); // Get setAdmin and updateAdmin from context
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
     subscriptionPrices: {
+      oneDay: '',
       oneMonth: '',
       threeMonths: '',
       sixMonths: '',
@@ -47,7 +48,11 @@ const AdminRegistration = () => {
   };
 
   const handleFileChange = (e, type) => {
-    setFormData({ ...formData, [type]: e.target.files });
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({
+      ...prev,
+      [type]: files  // Store the actual files instead of URLs
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -64,27 +69,41 @@ const AdminRegistration = () => {
     data.append('location[coordinates][]', formData.location.coordinates[1]);
     data.append('location[googleMapsLink]', formData.location.googleMapsLink);
 
-    Array.from(formData.gymImages).forEach((file) => {
+    formData.gymImages.forEach((file) => {
       data.append('gymImages', file);
     });
-    Array.from(formData.trainerImages).forEach((file) => {
+    formData.trainerImages.forEach((file) => {
       data.append('trainerImages', file);
     });
 
     try {
       const res = await axios.post('http://localhost:4000/admin/register', data);
-      alert('Registered successfully!');
-      console.log(res.data);
-
-      // Store admin in context
-      setAdmin(res.data.admin);
-
-      // Navigate to AdminPreview
-      navigate('/admin/preview');
+      console.log('Registration response:', res.data); // Add this for debugging
+      
+      // Store token
+      localStorage.setItem('adminToken', res.data.token);
+      
+      // Store admin data
+      updateAdmin(res.data.admin);
+      
+      alert('Registration successful!');
+      navigate('/adminpreview');
     } catch (err) {
-      console.error(err);
+      console.error('Registration error:', err);
       alert(err.response?.data?.message || 'Registration failed');
     }
+  };
+
+  const sampleImages = {
+    gym: [
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48",
+      "https://images.unsplash.com/photo-1540497077202-7c8a3999166f",
+      "https://images.unsplash.com/photo-1571902943202-507ec2618e8f"
+    ],
+    trainers: [
+      "https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb",
+      "https://images.unsplash.com/photo-1597347343908-2937e7dcc560"
+    ]
   };
 
   return (
@@ -107,18 +126,25 @@ const AdminRegistration = () => {
         {/* Subscription Prices */}
         <div>
           <label className="block font-semibold mb-2">Subscription Prices (₹)</label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {['oneMonth', 'threeMonths', 'sixMonths', 'oneYear'].map((key) => (
-              <input
-                key={key}
-                type="number"
-                name={`subscriptionPrices.${key}`}
-                placeholder={key}
-                required
-                value={formData.subscriptionPrices[key]}
-                onChange={handleChange}
-                className="input"
-              />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            {['oneDay', 'oneMonth', 'threeMonths', 'sixMonths', 'oneYear'].map((key) => (
+              <div key={key} className="flex flex-col">
+                <label className="text-sm text-gray-600 mb-1">
+                  {key === 'oneDay' ? '1 Day' :
+                   key === 'oneMonth' ? '1 Month' :
+                   key === 'threeMonths' ? '3 Months' :
+                   key === 'sixMonths' ? '6 Months' : '1 Year'}
+                </label>
+                <input
+                  type="number"
+                  name={`subscriptionPrices.${key}`}
+                  placeholder="Price"
+                  required
+                  value={formData.subscriptionPrices[key]}
+                  onChange={handleChange}
+                  className="input"
+                />
+              </div>
             ))}
           </div>
         </div>
