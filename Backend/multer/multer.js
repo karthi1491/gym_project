@@ -11,10 +11,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// This handles form-data like: gymImages[], trainerImages[]
+  
+// This handles form-data like: gymImages[], trainerImages[], studioImages[], instructorImages[]
 export const uploadFields = upload.fields([
   { name: 'gymImages', maxCount: 2 },
-  { name: 'trainerImages', maxCount: 2 }
+  { name: 'trainerImages', maxCount: 2 },
+  { name: 'studioImages', maxCount: 5 },
+  { name: 'instructorImages', maxCount: 5 },
+  { name: 'academyImages', maxCount: 5 },
+  { name: 'foodImages', maxCount: 5 },
+  { name: 'restaurantImages', maxCount: 5 }
 ]);
 
 

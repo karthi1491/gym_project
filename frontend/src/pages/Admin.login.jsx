@@ -26,7 +26,7 @@ function AdminLogin() {
 
       // Store admin in context
       setAdmin(res.data.admin);
-      navigate('/admin/dashboard');
+      navigate('adminpreview');
     } catch (err) {
       alert(err.response?.data?.message || 'Login failed');
     } finally {
@@ -96,8 +96,8 @@ function AdminLogin() {
         </p>
 
         <p className='text-center text-sm text-gray-400 mt-6'>
-          Don’t have an account?{' '}
-          <Link to="/adminregistration" className="text-white underline">
+          Don't have an account?{' '}
+          <Link to="/category-select" className="text-white underline">
             Register
           </Link>
         </p>

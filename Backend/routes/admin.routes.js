@@ -1,7 +1,7 @@
 import express from 'express';
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { register, login } from '../controllers/admin.controller.js';
+import { register, login, getAllAdmins } from '../controllers/admin.controller.js';
 import { uploadFields } from '../multer/multer.js';
 
 const router = Router();
@@ -32,5 +32,7 @@ router.post('/login', [
     body('email').isEmail().withMessage('Please enter a valid email address'),
     body('password').isLength({min:6}).withMessage('Password must be at least 6 characters long')
 ], login);
+
+router.get('/all', getAllAdmins);
 
 export default router;

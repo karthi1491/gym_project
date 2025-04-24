@@ -24,7 +24,7 @@ function userlogin() {
       console.log(res.data);
 
       localStorage.setItem('token', res.data.token);
-      navigate('/adminpreview');
+      navigate('/start');
     } catch (err) {
       alert(err.response?.data?.msg || 'Login failed');
     } finally {
@@ -103,7 +103,7 @@ function userlogin() {
         {/* Footer Links */}
         <div className="mt-8 text-sm text-center text-gray-400">
           <p>
-            Don’t have an account?{' '}
+            Don't have an account?{' '}
             <Link to="/userregistration" className="text-white underline">
               Register
             </Link>
@@ -117,11 +117,11 @@ function userlogin() {
         </div>
 
         <Link
-    to="/adminlogin"
-    className="w-full inline-block text-center bg-white text-black font-semibold mt-60 py-3  rounded-md hover:bg-gray-200 transition"
-  >
-    Login as Owner
-  </Link>
+          to="/category-select"
+          className="w-full inline-block text-center bg-white text-black font-semibold mt-60 py-3 rounded-md hover:bg-gray-200 transition"
+        >
+          Register as Owner
+        </Link>
       </div>
     </div>
   );

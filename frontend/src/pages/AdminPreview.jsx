@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAdmin } from "../context/AdminContext";
 import { useNavigate } from "react-router-dom";
 import { 
   MapPin, Star, ChevronRight, ArrowLeft, 
   Search, Calendar, Filter, X, TrendingUp,
-  Navigation, Clock, DollarSign, Dumbbell
+  Navigation, Clock, DollarSign, Dumbbell, Menu, LogOut, User, Settings, HelpCircle, Info
 } from 'lucide-react';
+import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GymDetailView = ({ gym, onBack }) => {
   return (
@@ -172,10 +175,37 @@ const AdminPreview = () => {
   const { admin, loading } = useAdmin();
   const [showFullDetails, setShowFullDetails] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Wrap setSearchQuery to add toast on clear
+  const handleSearchQueryChange = (value) => {
+    if (value === "") {
+      toast.info("Search cleared.");
+    }
+    setSearchQuery(value);
+  };
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedGym, setSelectedGym] = useState(null);
+  const [allGyms, setAllGyms] = useState([]);
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchAllGyms = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/admin/all');
+        setAllGyms(response.data.admins);
+        if (!response.data.admins || response.data.admins.length === 0) {
+          toast.info("No gyms found.");
+        }
+      } catch (error) {
+        console.error('Error fetching gyms:', error);
+        toast.error("Failed to fetch gyms. Please try again later.");
+      }
+    };
+
+    fetchAllGyms();
+  }, []);
 
   const popularLocations = [
     { id: 1, name: "Mumbai", area: "Maharashtra", count: "256 gyms" },
@@ -229,7 +259,10 @@ const AdminPreview = () => {
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                  toast.info("Search cleared.");
+                }}
                 className="absolute right-4 top-1/2 -translate-y-1/2"
               >
                 <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
@@ -305,10 +338,22 @@ const AdminPreview = () => {
     </div>
   );
 
+  const handleLogout = () => {
+    updateAdmin(null);
+    toast.success("Logged out successfully.");
+    navigate('/adminlogin');
+  };
+
+  // Add toast on gym selection
+  const handleGymSelect = (gym) => {
+    setSelectedGym(gym);
+    toast.info(`Selected gym: ${gym.firstName}'s Fitness Hub`);
+  };
+
   // Gym Card Component
   const GymCard = ({ gym }) => (
     <div 
-      onClick={() => setSelectedGym(gym)}
+      onClick={() => handleGymSelect(gym)}
       className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group"
     >
       {/* Image with better error handling */}
@@ -355,6 +400,60 @@ const AdminPreview = () => {
     </div>
   );
 
+  const MenuOverlay = () => (
+    <div 
+      className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      onClick={() => setIsMenuOpen(false)}
+    >
+      <div 
+        className={`fixed top-0 left-0 w-80 h-full bg-white transform transition-transform duration-300 ease-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-red-500 text-white p-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold">Hello, {admin?.firstName || 'User'}</h2>
+            <p className="text-sm opacity-90">{admin?.email}</p>
+          </div>
+          <button onClick={() => setIsMenuOpen(false)} className="p-2">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Menu Items */}
+        <div className="py-2">
+          <button className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-gray-100">
+            <User className="w-5 h-5 text-gray-600" />
+            <span className="text-gray-700">My Profile</span>
+          </button>
+          
+          <button className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-gray-100">
+            <Settings className="w-5 h-5 text-gray-600" />
+            <span className="text-gray-700">Settings</span>
+          </button>
+          
+          <button className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-gray-100">
+            <HelpCircle className="w-5 h-5 text-gray-600" />
+            <span className="text-gray-700">Help & Support</span>
+          </button>
+          
+          <button className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-gray-100">
+            <Info className="w-5 h-5 text-gray-600" />
+            <span className="text-gray-700">About Us</span>
+          </button>
+          
+          <button 
+            onClick={handleLogout}
+            className="w-full px-4 py-3 flex items-center space-x-3 hover:bg-gray-100 text-red-500"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -371,14 +470,65 @@ const AdminPreview = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <SearchBar />
-      
-      {/* Main Content with adjusted spacing */}
+    <div className="min-h-screen bg-black">
+      {/* Fixed Header with Hamburger */}
+      <div className="fixed inset-x-0 top-0 bg-black shadow-sm z-50">
+        {/* Brand Header with Hamburger */}
+        <div className="bg-gradient-to-r from-primary-600 to-primary-500 px-4 py-4 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => setIsMenuOpen(true)}
+                className="p-2 hover:bg-primary-600 rounded-full bg-primary-700 border-2 border-white shadow-lg"
+                aria-label="Open menu"
+              >
+                <Menu className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-3xl font-extrabold text-white" style={{ letterSpacing: '0.1em' }}>
+                KAOB
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button className="px-4 py-1.5 text-sm font-medium text-primary-500 bg-white rounded-full hover:bg-gray-100 transition-colors">
+                Login
+              </button>
+              <button className="px-4 py-1.5 text-sm font-medium text-white border border-white rounded-full hover:bg-primary-600 transition-colors">
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Input */}
+        <div className="px-6 py-4 border-b border-gray-100 bg-black">
+          <div className="relative max-w-2xl mx-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search for gyms in your area..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setShowSearchOverlay(true)}
+              className="w-full pl-12 pr-4 py-3.5 bg-gray-50 rounded-full text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all duration-300"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2"
+              >
+                <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Menu Overlay */}
+      <MenuOverlay />
+      <ToastContainer />
+
       <div className="pt-[180px] pb-20">
         {!showSearchOverlay && (
           <div className="max-w-7xl mx-auto px-6 mt-6">
-            {/* Selected Location Header */}
             {selectedLocation && (
               <div className="bg-white px-6 py-4 shadow-sm rounded-xl mb-6">
                 <div className="flex items-center gap-3">
@@ -393,14 +543,19 @@ const AdminPreview = () => {
 
             {/* Gym Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {admin ? (
-                <GymCard gym={admin} />
+              {allGyms.length > 0 ? (
+                allGyms.map((gym) => (
+                  <GymCard key={gym._id} gym={gym} />
+                ))
               ) : (
                 <div className="col-span-full text-center py-16">
                   <Dumbbell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">No gyms found in this area</p>
                   <button 
-                    onClick={() => navigate('/adminregistration')}
+                    onClick={() => {
+                      toast.info("Redirecting to gym registration.");
+                      navigate('/adminregistration');
+                    }}
                     className="bg-primary-500 text-white px-6 py-3 rounded-xl hover:bg-primary-600 transition-colors"
                   >
                     Register Your Gym
