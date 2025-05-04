@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 
+
 const YogaRegistration = () => {
   const navigate = useNavigate();
   const { updateAdmin } = useAdmin();

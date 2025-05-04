@@ -11,6 +11,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const GymDetailView = ({ gym, onBack }) => {
+  const [hoveredPlan, setHoveredPlan] = useState(null);
+  const navigate = useNavigate();
+
+  const handlePayNowClick = (price) => {
+    navigate('/payment', { state: { amount: price } });
+  };
+
   return (
     <div className="min-h-screen bg-white animate-fade-in">
       {/* Back Button */}
@@ -55,7 +62,9 @@ const GymDetailView = ({ gym, onBack }) => {
             {Object.entries(gym.subscriptionPrices || {}).map(([period, price]) => (
               <div 
                 key={period}
-                className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-shadow"
+                className="bg-gray-50 rounded-xl p-6 hover:shadow-md transition-shadow relative"
+                onMouseEnter={() => setHoveredPlan(period)}
+                onMouseLeave={() => setHoveredPlan(null)}
               >
                 <p className="text-gray-600 mb-2">
                   {period === 'oneDay' ? '1 Day' :
@@ -67,6 +76,14 @@ const GymDetailView = ({ gym, onBack }) => {
                 <p className="text-sm text-gray-500 mt-1">
                   {period === 'oneDay' ? 'Per day' : 'Per month'}
                 </p>
+                {hoveredPlan === period && (
+                  <button
+                    onClick={() => handlePayNowClick(price)}
+                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white py-2 px-6 rounded-xl font-semibold hover:bg-red-700 transition-colors"
+                  >
+                    Pay Now
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -165,6 +182,10 @@ const GymDetailView = ({ gym, onBack }) => {
         {/* Join Now Button */}
         <button className="w-full bg-primary-500 text-white py-4 rounded-xl font-semibold hover:bg-primary-600 transition-colors">
           Join Now
+        </button>
+        {/* Pay Button like OYO */}
+        <button className="w-full mt-4 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors">
+          Pay Now
         </button>
       </div>
     </div>
@@ -350,55 +371,71 @@ const AdminPreview = () => {
     toast.info(`Selected gym: ${gym.firstName}'s Fitness Hub`);
   };
 
-  // Gym Card Component
-  const GymCard = ({ gym }) => (
-    <div 
-      onClick={() => handleGymSelect(gym)}
-      className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group"
-    >
-      {/* Image with better error handling */}
-      <div className="relative h-56 overflow-hidden  bg-gray-100">
-        <img
-          src={gym.gymImages?.[0] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48"}
-          alt="Gym"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48";
-          }}
-        />
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
-          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-          <span className="text-sm font-semibold">4.8</span>
-        </div>
-      </div>
+  
+  const GymCard = ({ gym }) => {
+    const navigate = useNavigate();
 
-      {/* Content with improved spacing */}
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-gray-900 mb-2">
-          {gym.firstName}'s Fitness Hub
-        </h3>
-        <div className="flex items-center gap-2 text-gray-500 mb-4">
-          <MapPin className="w-4 h-4 text-primary-500 flex-shrink-0" />
-          <p className="text-sm truncate">{gym.location?.address || 'Location not available'}</p>
-        </div>
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Starting from</p>
-            <div className="space-y-1">
-              <p className="text-lg font-bold text-primary-500">
-                ₹{gym.subscriptionPrices?.oneDay || '0'}/day
-              </p>
-              <p className="text-sm text-gray-500">
-                ₹{gym.subscriptionPrices?.oneMonth || '0'}/mo
-              </p>
-            </div>
+
+    return (
+      <div 
+        onClick={() => handleGymSelect(gym)}
+        className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group"
+      >
+        {/* Image with better error handling */}
+        <div className="relative h-56 overflow-hidden  bg-gray-100">
+          <img
+            src={gym.gymImages?.[0] || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48"}
+            alt="Gym"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48";
+            }}
+          />
+          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+            <span className="text-sm font-semibold">4.8</span>
           </div>
-          <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
+        </div>
+
+        {/* Content with improved spacing */}
+        <div className="p-5">
+          <h3 className="text-lg font-bold text-gray-900 mb-2">
+            {gym.firstName}'s Fitness Hub
+          </h3>
+          <div className="flex items-center gap-2 text-gray-500 mb-4">
+            <MapPin className="w-4 h-4 text-primary-500 flex-shrink-0" />
+            <p className="text-sm truncate">{gym.location?.address || 'Location not available'}</p>
+          </div>
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Starting from</p>
+              <div className="space-y-1">
+                <p className="text-lg font-bold text-primary-500">
+                  ₹{gym.subscriptionPrices?.oneDay || '0'}/day
+                </p>
+                <p className="text-sm text-gray-500">
+                  ₹{gym.subscriptionPrices?.oneMonth || '0'}/mo
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
+          </div>
+          {/* Pay Button like OYO */}
+          <button 
+            onClick={(e) => {
+              console.log("Pay Now button clicked");
+              e.stopPropagation();
+              navigate('/payment');
+            }}
+            className="mt-4 w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors"
+          >
+            Pay Now
+          </button>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const MenuOverlay = () => (
     <div 

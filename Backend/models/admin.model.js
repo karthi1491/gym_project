@@ -93,7 +93,7 @@ const adminSchema = new mongoose.Schema({
 });
 
 
-adminSchema.index({ "location.coordinates": "2dsphere" });
+adminSchema.index({ location: "2dsphere" });
 
 
 // 🔑 Generate JWT Token

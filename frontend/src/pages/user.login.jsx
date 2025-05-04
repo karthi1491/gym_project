@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Eye, EyeOff } from 'lucide-react'; 
+import { Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
 
 function userlogin() {
   const [email, setEmail] = useState('');
@@ -16,16 +15,52 @@ function userlogin() {
     e.preventDefault();
     setLoading(true);
 
+    // Login data object
+    const loginData = { email, password };
+
+    // Check if geolocation is available
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          // If geolocation is available, add latitude and longitude to login data
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          // Add location data to login request
+          loginData.latitude = latitude;
+          loginData.longitude = longitude;
+
+          // Call the function to perform login
+          await performLogin(loginData);
+        },
+        async (error) => {
+          // If geolocation is not available or fails, proceed without location
+          await performLogin(loginData);
+        }
+      );
+    } else {
+      // If geolocation is not supported, proceed with login without location
+      await performLogin(loginData);
+    }
+  };
+
+  // Function to perform the actual login API call
+  const performLogin = async (loginData) => {
     try {
-      const res = await axios.post('http://localhost:4000/user/login', {
-        email,
-        password,
-      });
+      const res = await axios.post('http://localhost:4000/user/login', loginData);
       console.log(res.data);
 
+      // Store token and other data in localStorage
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('nearbyGyms', JSON.stringify(res.data.nearbyGyms));
+      localStorage.setItem('nearbyYoga', JSON.stringify(res.data.nearbyYoga));
+      localStorage.setItem('nearbyDance', JSON.stringify(res.data.nearbyDance));
+      localStorage.setItem('nearbyFood', JSON.stringify(res.data.nearbyFood));
+
+      // Navigate to the start page
       navigate('/start');
     } catch (err) {
+      console.error(err); // Log the error for debugging
       alert(err.response?.data?.msg || 'Login failed');
     } finally {
       setLoading(false);
@@ -38,24 +73,19 @@ function userlogin() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-black px-4">
-        {/* Background Image */}
-
-       
-
-
-       
-        <img src="https://sdmntpreastus2.oaiusercontent.com/files/00000000-8e70-61f6-a4c8-a1bb8d9befcf/raw?se=2025-04-13T06%3A45%3A41Z&sp=r&sv=2024-08-04&sr=b&scid=291e74ed-0b6e-5dc7-971e-96e01a550635&skoid=b53ae837-f585-4db7-b46f-2d0322fce5a9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-13T04%3A28%3A47Z&ske=2025-04-14T04%3A28%3A47Z&sks=b&skv=2024-08-04&sig=iUEYUxj8sNHdk6OEIFQeZrA2BwKhlDZO4i2YhsbZ1JM%3D" alt="Background" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+      {/* Background Image */}
+      <img
+        src="https://sdmntpreastus2.oaiusercontent.com/files/00000000-8e70-61f6-a4c8-a1bb8d9befcf/raw?se=2025-04-13T06%3A45%3A41Z&sp=r&sv=2024-08-04&sr=b&scid=291e74ed-0b6e-5dc7-971e-96e01a550635&skoid=b53ae837-f585-4db7-b46f-2d0322fce5a9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-13T04%3A28%3A47Z&ske=2025-04-14T04%3A28%3A47Z&sks=b&skv=2024-08-04&sig=iUEYUxj8sNHdk6OEIFQeZrA2BwKhlDZO4i2YhsbZ1JM%3D"
+        alt="Background"
+        className="absolute inset-0 w-full h-full object-cover opacity-30"
+      />
       <div className="w-full max-w-sm bg-black text-white p-6 rounded-2xl relative">
         {/* Uber-style loader */}
-
-       
         {loading && (
           <div className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 rounded-2xl">
             <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
-
-
 
         {/* Title */}
         <h1 className="text-3xl font-semibold mb-6">Welcome back</h1>
@@ -91,13 +121,12 @@ function userlogin() {
 
           <button
             type="submit"
-            className="w-full bg-white text-black font-semibold py-3   rounded-md hover:bg-gray-200 transition"
+            className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-gray-200 transition"
           >
             Login
           </button>
 
-           {/* 🚀 Login as Owner Button */}
- 
+          {/* 🚀 Login as Owner Button */}
         </form>
 
         {/* Footer Links */}

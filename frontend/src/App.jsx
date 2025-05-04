@@ -18,7 +18,7 @@ import AdminCategorySelect from './pages/AdminCategorySelect';
 import YogaRegistration from './pages/YogaRegistration';
 import DanceRegistration from './pages/DanceRegistration';
 import FoodRegistration from './pages/FoodRegistration';
-
+import Payment from './pages/Payment';
 
 function App() {
   
@@ -41,6 +41,7 @@ function App() {
       <Route path="/yoga-registration" element={<YogaRegistration />} />
       <Route path="/dance-registration" element={<DanceRegistration />} />
       <Route path="/food-registration" element={<FoodRegistration />} />
+      <Route path="/payment" element={<Payment />} />
      </Routes>
      </AdminProvider>
      

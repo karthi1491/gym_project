@@ -1,7 +1,8 @@
 import express from 'express';
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { register, login } from '../controllers/user.controller.js';
+
+import { register, login, createPaymentOrder, verifyPayment } from '../controllers/user.controller.js';
 
 
 const router = Router();
@@ -19,6 +20,10 @@ router.post('/login', [
     body('email').isEmail().withMessage('Please enter a valid email address'),
     body('password').isLength({min:6}).withMessage('Password must be at least 6 characters long')
 ] , login);
+
+router.post('/payment/order', createPaymentOrder);
+
+router.post('/payment/verify', verifyPayment);
 
 
 
